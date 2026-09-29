@@ -11,8 +11,9 @@
 
 /* Variáveis de cor (facilita mudar depois) */
 :root {
-  --azul: #2563eb;          /* cor principal */
-  --azul-claro: #dbeafe;    /* cor secundária */
+  --azul: #7ba7d9;          /* azul pastel (cor principal) */
+  --azul-claro: #e6f0fb;    /* azul pastel bem claro (cor secundária) */
+  --azul-escuro: #35547a;   /* azul mais escuro para textos sobre o pastel */
   --cinza-texto: #334155;
   --cinza-suave: #f1f5f9;
   --branco: #ffffff;
@@ -41,11 +42,14 @@ body {
 .cabecalho h1 {
   font-size: 1.8rem;
   margin-bottom: 4px;
+  color: var(--branco);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); /* ajuda na leitura sobre o pastel */
 }
 
 .subtitulo {
   font-size: 1rem;
-  opacity: 0.9;
+  color: var(--branco);
+  opacity: 0.95;
 }
 
 /* ===========================
@@ -85,7 +89,7 @@ body {
 
 .card h2 {
   font-size: 0.9rem;
-  color: var(--azul);
+  color: var(--azul-escuro);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -109,7 +113,7 @@ body {
 
 .tabela-area h2 {
   font-size: 1.3rem;
-  color: var(--azul);
+  color: var(--azul-escuro);
   margin-bottom: 12px;
 }
 
