@@ -33,7 +33,8 @@ body {
    =========================== */
 
 .cabecalho {
-  background-color: var(--azul);
+  /* Degradê do azul pastel até o azul marinho */
+  background: linear-gradient(135deg, #7ba7d9 0%, #35547a 60%, #1e3a5f 100%);
   color: var(--branco);
   text-align: center;
   padding: 24px 16px;
