@@ -2,14 +2,12 @@
    CONFIGURAÇÕES GERAIS
    =========================== */
 
-/* Reset básico: remove espaçamentos padrão do navegador */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Variáveis de cor (facilita mudar depois) */
 :root {
   --azul: #7ba7d9;          /* azul pastel (cor principal) */
   --azul-claro: #e6f0fb;    /* azul pastel bem claro (cor secundária) */
@@ -29,7 +27,7 @@ body {
 }
 
 /* ===========================
-   CABEÇALHO
+   CABEÇALHO (com degradê e Fraunces)
    =========================== */
 
 .cabecalho {
@@ -41,10 +39,12 @@ body {
 }
 
 .cabecalho h1 {
-  font-size: 1.8rem;
+  font-family: "Fraunces", serif;  /* Fonte Fraunces no título */
+  font-size: 2rem;
+  font-weight: 600;
   margin-bottom: 4px;
   color: var(--branco);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); /* ajuda na leitura sobre o pastel */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .subtitulo {
@@ -64,12 +64,11 @@ body {
 }
 
 /* ===========================
-   CARDS DE RESUMO
+   CARDS DE RESUMO (com Fraunces nos títulos)
    =========================== */
 
 .cards {
   display: grid;
-  /* Cria várias colunas automaticamente, ajustando ao espaço */
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 32px;
@@ -89,7 +88,9 @@ body {
 }
 
 .card h2 {
-  font-size: 0.9rem;
+  font-family: "Fraunces", serif;  /* Fonte Fraunces nos títulos dos cards */
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--azul-escuro);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -104,7 +105,7 @@ body {
 
 .card .detalhe {
   font-size: 0.8rem;
-  color: #16a34a; /* verde discreto para "Frequência adequada" */
+  color: #16a34a;
   margin-top: 4px;
 }
 
@@ -118,7 +119,6 @@ body {
   margin-bottom: 12px;
 }
 
-/* Permite rolagem horizontal no celular */
 .tabela-responsiva {
   overflow-x: auto;
   border-radius: var(--borda-arredondada);
@@ -129,7 +129,7 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 640px; /* garante que a tabela não fique espremida */
+  min-width: 640px;
 }
 
 thead {
@@ -152,7 +152,6 @@ tbody tr:hover {
   background-color: var(--azul-claro);
 }
 
-/* Classes de situação (aplicadas pelo JS) */
 .situacao-bom {
   color: #16a34a;
   font-weight: bold;
@@ -185,7 +184,7 @@ tbody tr:hover {
 
 @media (max-width: 600px) {
   .cabecalho h1 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
   }
 
   .card .valor {
