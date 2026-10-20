@@ -9,9 +9,9 @@
 }
 
 :root {
-  --azul: #7ba7d9;          /* azul pastel (cor principal) */
-  --azul-claro: #e6f0fb;    /* azul pastel bem claro (cor secundária) */
-  --azul-escuro: #35547a;   /* azul mais escuro para textos sobre o pastel */
+  --bordo: #7b2d3b;         /* bordô (cor principal) */
+  --bordo-claro: #f5e6e8;   /* bordô bem claro (cor secundária) */
+  --bordo-escuro: #4a1a24;  /* bordô escuro para textos */
   --cinza-texto: #334155;
   --cinza-suave: #f1f5f9;
   --branco: #ffffff;
@@ -27,24 +27,24 @@ body {
 }
 
 /* ===========================
-   CABEÇALHO (com degradê e Fraunces)
+   CABEÇALHO (degradê vermelho + Fraunces)
    =========================== */
 
 .cabecalho {
-  /* Degradê do azul pastel até o azul marinho */
-  background: linear-gradient(135deg, #7ba7d9 0%, #35547a 60%, #1e3a5f 100%);
+  /* Degradê do vermelho vivo até o bordô escuro */
+  background: linear-gradient(135deg, #e63946 0%, #b02a37 50%, #7b2d3b 100%);
   color: var(--branco);
   text-align: center;
   padding: 24px 16px;
 }
 
 .cabecalho h1 {
-  font-family: "Fraunces", serif;  /* Fonte Fraunces no título */
+  font-family: "Fraunces", serif;
   font-size: 2rem;
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--branco);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .subtitulo {
@@ -64,7 +64,7 @@ body {
 }
 
 /* ===========================
-   CARDS DE RESUMO (com Fraunces nos títulos)
+   CARDS DE RESUMO (Fraunces nos títulos)
    =========================== */
 
 .cards {
@@ -88,10 +88,10 @@ body {
 }
 
 .card h2 {
-  font-family: "Fraunces", serif;  /* Fonte Fraunces nos títulos dos cards */
+  font-family: "Fraunces", serif;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--azul-escuro);
+  color: var(--bordo);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -114,8 +114,9 @@ body {
    =========================== */
 
 .tabela-area h2 {
+  font-family: "Fraunces", serif;
   font-size: 1.3rem;
-  color: var(--azul-escuro);
+  color: var(--bordo);
   margin-bottom: 12px;
 }
 
@@ -133,7 +134,7 @@ table {
 }
 
 thead {
-  background-color: var(--azul);
+  background-color: var(--bordo);
   color: var(--branco);
 }
 
@@ -141,7 +142,7 @@ th, td {
   padding: 10px 12px;
   text-align: left;
   font-size: 0.9rem;
-  border-bottom: 1px solid var(--azul-claro);
+  border-bottom: 1px solid var(--bordo-claro);
 }
 
 tbody tr:nth-child(even) {
@@ -149,7 +150,7 @@ tbody tr:nth-child(even) {
 }
 
 tbody tr:hover {
-  background-color: var(--azul-claro);
+  background-color: var(--bordo-claro);
 }
 
 .situacao-bom {
