@@ -27,12 +27,12 @@ body {
 }
 
 /* ===========================
-   CABEÇALHO (degradê vermelho + Fraunces)
+   CABEÇALHO (degradê bordô escuro + Fraunces)
    =========================== */
 
 .cabecalho {
-  /* Degradê do vermelho vivo até o bordô escuro */
-  background: linear-gradient(135deg, #e63946 0%, #b02a37 50%, #7b2d3b 100%);
+  /* Degradê do bordô até um bordô quase preto */
+  background: linear-gradient(135deg, #7b2d3b 0%, #5a1f2b 50%, #2e0f16 100%);
   color: var(--branco);
   text-align: center;
   padding: 24px 16px;
