@@ -145,6 +145,15 @@ th, td {
   border-bottom: 1px solid var(--bordo-claro);
 }
 
+/* Aplica a Poller One nas colunas de notas e média (1º, 2º, 3º Tri e Média) */
+td:nth-child(2),
+td:nth-child(3),
+td:nth-child(4),
+td:nth-child(5) {
+  font-family: "Poller One", sans-serif;
+  font-size: 0.85rem;
+}
+
 tbody tr:nth-child(even) {
   background-color: var(--cinza-suave);
 }
