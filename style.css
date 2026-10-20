@@ -153,19 +153,39 @@ tbody tr:hover {
   background-color: var(--bordo-claro);
 }
 
+/* ===========================
+   BALÕES DE SITUAÇÃO
+   =========================== */
+
+/* Balão verde para "Bom desempenho" */
 .situacao-bom {
-  color: #16a34a;
+  display: inline-block;
+  background-color: #dcfce7;
+  color: #166534;
   font-weight: bold;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 999px; /* deixa o balão arredondado (pílula) */
+  white-space: nowrap;  /* impede que o texto quebre dentro do balão */
 }
 
+/* Balão vermelho para "Atenção" */
 .situacao-atencao {
-  color: #dc2626;
+  display: inline-block;
+  background-color: #fee2e2;
+  color: #991b1b;
   font-weight: bold;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
+/* Texto simples e discreto para "Nota ainda não disponível" */
 .situacao-pendente {
   color: #64748b;
   font-style: italic;
+  font-size: 0.85rem;
 }
 
 /* ===========================
