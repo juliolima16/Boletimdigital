@@ -1,14 +1,18 @@
 /* =========================================================
-   DADOS FICTÍCIOS (9º ANO)
-   =========================================================
-   "boletim" é um ARRAY (lista) de OBJETOS.
-   Cada OBJETO representa uma disciplina.
-   Cada objeto tem:
-   - disciplina: nome
-   - tri1, tri2, tri3: notas brutas (podem vir em formatos diferentes)
-   - faltas: array com as faltas de cada trimestre
-========================================================= */
-const boletim = [
+   CONFIGURAÇÃO FIXA DO ALUNO
+   ========================================================= */
+const CONFIG_ALUNO = {
+  turma: "9C",
+  numeroChamada: 18,
+  apiUrl: "https://boletim-api.profbt.com.br"
+};
+
+const MEDIA_MINIMA = 6.0;
+
+/* =========================================================
+   DADOS LOCALMENTE PRESERVADOS (9º ANO)
+   ========================================================= */
+const boletimLocal = [
   { disciplina: "Língua Portuguesa", tri1: 78, tri2: "8,2", tri3: 8.6, faltas: [2, 2, 1] },
   { disciplina: "Matemática", tri1: 55, tri2: "5,4", tri3: null, faltas: [3, 2, 2] },
   { disciplina: "Ciências", tri1: 84, tri2: 7.9, tri3: "8,3", faltas: [1, 1, 1] },
@@ -26,113 +30,60 @@ const boletim = [
   { disciplina: "Práticas Experimentais", tri1: 64, tri2: "6,6", tri3: 7.0, faltas: [1, 1, 1] }
 ];
 
-const MEDIA_MINIMA = 6.0; // média de referência
+// Estado da Sessão (somente em memória)
+let sessaoPin = "";
+let dadosAtuais = [];
+let modoEdicao = false;
 
 /* =========================================================
    FUNÇÃO: normalizarNota(valor)
-   =========================================================
-   Transforma qualquer nota bruta em um número de 0 a 10,
-   ou retorna null quando a nota ainda não foi lançada.
-
-   Regras:
-   - vazio / null / undefined  -> null (ainda não lançada)
-   - 0 a 10                    -> permanece igual
-   - maior que 10 até 100      -> divide por 10
-   - aceita ponto ou vírgula decimal
-   - valores fora das regras   -> null (inválido)
-========================================================= */
+   ========================================================= */
 function normalizarNota(valor) {
-  // Nota ausente
   if (valor === null || valor === undefined || valor === "") {
     return null;
   }
-
-  // Se for string, troca vírgula por ponto antes de converter
   if (typeof valor === "string") {
     valor = valor.replace(",", ".");
   }
-
   const numero = Number(valor);
-
-  // Se não for número válido, retorna null
   if (isNaN(numero)) {
     return null;
   }
-
-  // Entre 0 e 10: mantém
   if (numero >= 0 && numero <= 10) {
     return numero;
   }
-
-  // Maior que 10 e até 100: divide por 10
   if (numero > 10 && numero <= 100) {
     return numero / 10;
   }
-
-  // Fora das regras: inválido
   return null;
 }
 
 /* =========================================================
-   FUNÇÃO: calcularMedia(notas)
-   =========================================================
-   Recebe um array com notas já normalizadas (ou null).
-   Calcula a média usando SOMENTE as notas disponíveis.
-   Se não houver nenhuma nota válida, retorna null.
-========================================================= */
+   FUNÇÕES AUXILIARES DE CÁLCULO
+   ========================================================= */
 function calcularMedia(notas) {
   const validas = notas.filter((n) => n !== null);
-
-  if (validas.length === 0) {
-    return null;
-  }
-
+  if (validas.length === 0) return null;
   const soma = validas.reduce((acc, n) => acc + n, 0);
   return soma / validas.length;
 }
 
-/* =========================================================
-   FUNÇÃO: definirSituacao(media)
-   =========================================================
-   Retorna a situação da disciplina de acordo com a média.
-========================================================= */
 function definirSituacao(media) {
-  if (media === null) {
-    return "Nota ainda não disponível";
-  }
-  if (media >= MEDIA_MINIMA) {
-    return "Bom desempenho";
-  }
+  if (media === null) return "Nota ainda não disponível";
+  if (media >= MEDIA_MINIMA) return "Bom desempenho";
   return "Atenção";
 }
 
-/* =========================================================
-   FUNÇÃO: formatarNota(valor)
-   =========================================================
-   Mostra a nota com uma casa decimal.
-   Se for null, mostra "Ainda não lançada".
-========================================================= */
 function formatarNota(valor) {
-  if (valor === null) {
-    return "Ainda não lançada";
-  }
+  if (valor === null) return "Ainda não lançada";
   return valor.toFixed(1).replace(".", ",");
 }
 
-/* =========================================================
-   FUNÇÃO: somarFaltas(faltas)
-   =========================================================
-   Soma todos os números do array de faltas.
-========================================================= */
 function somarFaltas(faltas) {
-  return faltas.reduce((acc, n) => acc + n, 0);
+  if (!Array.isArray(faltas)) return 0;
+  return faltas.reduce((acc, n) => acc + (Number(n) || 0), 0);
 }
 
-/* =========================================================
-   FUNÇÃO: classeSituacao(situacao)
-   =========================================================
-   Retorna a classe CSS correspondente à situação.
-========================================================= */
 function classeSituacao(situacao) {
   if (situacao === "Bom desempenho") return "situacao-bom";
   if (situacao === "Atenção") return "situacao-atencao";
@@ -140,98 +91,25 @@ function classeSituacao(situacao) {
 }
 
 /* =========================================================
-   FUNÇÃO: preencherTabela()
-   =========================================================
-   Cria as linhas da tabela dinamicamente a partir do array.
-========================================================= */
+   RENDERIZAÇÃO DA TABELA E CARDS
+   ========================================================= */
 function preencherTabela() {
   const corpo = document.getElementById("corpo-tabela");
-  corpo.innerHTML = ""; // limpa antes de preencher
+  corpo.innerHTML = "";
 
-  boletim.forEach((item) => {
-    // Normaliza as 3 notas
+  dadosAtuais.forEach((item, index) => {
     const n1 = normalizarNota(item.tri1);
     const n2 = normalizarNota(item.tri2);
     const n3 = normalizarNota(item.tri3);
 
-    // Média e faltas
     const media = calcularMedia([n1, n2, n3]);
-    const totalFaltas = somarFaltas(item.faltas);
-
-    // Situação
+    const faltasArray = Array.isArray(item.faltas) ? item.faltas : [0, 0, 0];
+    const totalFaltas = somarFaltas(faltasArray);
     const situacao = definirSituacao(media);
 
-    // Cria a linha <tr>
     const linha = document.createElement("tr");
-    linha.innerHTML = `
-      <td>${item.disciplina}</td>
-      <td>${formatarNota(n1)}</td>
-      <td>${formatarNota(n2)}</td>
-      <td>${formatarNota(n3)}</td>
-      <td>${media !== null ? formatarNota(media) : "—"}</td>
-      <td>${totalFaltas}</td>
-      <td class="${classeSituacao(situacao)}">${situacao}</td>
-    `;
-    corpo.appendChild(linha);
-  });
-}
 
-/* =========================================================
-   FUNÇÃO: preencherCards()
-   =========================================================
-   Calcula os valores dos cards de resumo.
-========================================================= */
-function preencherCards() {
-  // Vamos acumular médias e faltas de todas as disciplinas
-  const medias = [];
-  let totalFaltas = 0;
-  let totalBom = 0;
-  let totalAtencao = 0;
-
-  boletim.forEach((item) => {
-    const n1 = normalizarNota(item.tri1);
-    const n2 = normalizarNota(item.tri2);
-    const n3 = normalizarNota(item.tri3);
-
-    const media = calcularMedia([n1, n2, n3]);
-    const situacao = definirSituacao(media);
-
-    if (media !== null) {
-      medias.push(media);
-    }
-    if (situacao === "Bom desempenho") totalBom++;
-    if (situacao === "Atenção") totalAtencao++;
-
-    totalFaltas += somarFaltas(item.faltas);
-  });
-
-  // Média geral (média das médias disponíveis)
-  const mediaGeral = calcularMedia(medias);
-
-  // Frequência FICTÍCIA/DEMONSTRATIVA — apenas para mostrar na tela.
-  // No futuro, será calculada de outra forma (a partir de aulas e presenças).
-  const frequenciaDemonstrativa = 92;
-
-  // Preenche os elementos do HTML
-  document.getElementById("media-geral").textContent =
-    mediaGeral !== null ? formatarNota(mediaGeral) : "—";
-
-  document.getElementById("total-faltas").textContent = totalFaltas;
-
-  document.getElementById("total-bom").textContent = totalBom;
-
-  document.getElementById("total-atencao").textContent = totalAtencao;
-
-  document.getElementById("frequencia").textContent =
-    frequenciaDemonstrativa + "%";
-}
-
-/* =========================================================
-   INICIALIZAÇÃO
-   =========================================================
-   Quando a página terminar de carregar, preenche tudo.
-========================================================= */
-document.addEventListener("DOMContentLoaded", () => {
-  preencherTabela();
-  preencherCards();
-});
+    if (modoEdicao) {
+      linha.innerHTML = `
+        <td></td>
+        <td><input type="text" class="input-edicao" data-idx="${index}" data-campo="tri1" value="${item.tri1 !== null && item.tri1 !== undefined

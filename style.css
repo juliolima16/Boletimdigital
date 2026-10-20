@@ -31,7 +31,6 @@ body {
    =========================== */
 
 .cabecalho {
-  /* Degradê do bordô até um bordô quase preto */
   background: linear-gradient(135deg, #7b2d3b 0%, #5a1f2b 50%, #2e0f16 100%);
   color: var(--branco);
   text-align: center;
@@ -145,7 +144,6 @@ th, td {
   border-bottom: 1px solid var(--bordo-claro);
 }
 
-/* Aplica a Poller One nas colunas de notas e média (1º, 2º, 3º Tri e Média) */
 td:nth-child(2),
 td:nth-child(3),
 td:nth-child(4),
@@ -166,7 +164,6 @@ tbody tr:hover {
    BALÕES DE SITUAÇÃO
    =========================== */
 
-/* Balão verde para "Bom desempenho" */
 .situacao-bom {
   display: inline-block;
   background-color: #dcfce7;
@@ -174,11 +171,10 @@ tbody tr:hover {
   font-weight: bold;
   font-size: 0.8rem;
   padding: 4px 10px;
-  border-radius: 999px; /* deixa o balão arredondado (pílula) */
-  white-space: nowrap;  /* impede que o texto quebre dentro do balão */
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
-/* Balão vermelho para "Atenção" */
 .situacao-atencao {
   display: inline-block;
   background-color: #fee2e2;
@@ -190,7 +186,6 @@ tbody tr:hover {
   white-space: nowrap;
 }
 
-/* Texto simples e discreto para "Nota ainda não disponível" */
 .situacao-pendente {
   color: #64748b;
   font-style: italic;
@@ -209,20 +204,128 @@ tbody tr:hover {
 }
 
 /* ===========================
+   ESTILOS ADICIONAIS (API & EDIÇÃO)
+   =========================== */
+
+.oculto {
+  display: none !important;
+}
+
+.area-login {
+  max-width: 400px;
+  margin: 40px auto;
+}
+
+.card-login {
+  background-color: var(--branco);
+  border-radius: var(--borda-arredondada);
+  box-shadow: var(--sombra);
+  padding: 24px;
+  text-align: center;
+}
+
+.card-login h2 {
+  font-family: "Fraunces", serif;
+  color: var(--bordo);
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+.info-aluno {
+  font-size: 0.95rem;
+  color: var(--cinza-texto);
+  margin-bottom: 20px;
+}
+
+.campo-login {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.campo-login label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.campo-login input,
+.input-edicao {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.campo-login input:focus,
+.input-edicao:focus {
+  border-color: var(--bordo);
+}
+
+.input-edicao {
+  width: 100%;
+  max-width: 70px;
+  padding: 6px;
+  text-align: center;
+}
+
+.input-invalido {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+.btn-principal,
+.btn-secundario,
+.btn-cancelar {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-principal {
+  background-color: var(--bordo);
+  color: var(--branco);
+}
+
+.btn-secundario {
+  background-color: #0284c7;
+  color: var(--branco);
+}
+
+.btn-cancelar {
+  background-color: #64748b;
+  color: var(--branco);
+}
+
+.btn-principal:hover,
+.btn-secundario:hover,
+.btn-cancelar:hover {
+  opacity: 0.9;
+}
+
+.mensagem-status {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-height: 20px;
+}
+
+.painel-acoes {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  justify-content: flex-end;
+}
+
+/* ===========================
    RESPONSIVIDADE (celular)
    =========================== */
 
 @media (max-width: 600px) {
   .cabecalho h1 {
-    font-size: 1.5rem;
-  }
-
-  .card .valor {
-    font-size: 1.3rem;
-  }
-
-  th, td {
-    padding: 8px;
-    font-size: 0.8rem;
-  }
-}
+    font-size: 1
