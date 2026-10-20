@@ -112,4 +112,277 @@ function preencherTabela() {
     if (modoEdicao) {
       linha.innerHTML = `
         <td></td>
-        <td><input type="text" class="input-edicao" data-idx="${index}" data-campo="tri1" value="${item.tri1 !== null && item.tri1 !== undefined
+        <td><input type="text" class="input-edicao" data-idx="${index}" data-campo="tri1" value="${item.tri1 !== null && item.tri1 !== undefined ? item.tri1 : ''}"></td>
+        <td><input type="text" class="input-edicao" data-idx="${index}" data-campo="tri2" value="${item.tri2 !== null && item.tri2 !== undefined ? item.tri2 : ''}"></td>
+        <td><input type="text" class="input-edicao" data-idx="${index}" data-campo="tri3" value="${item.tri3 !== null && item.tri3 !== undefined ? item.tri3 : ''}"></td>
+        <td>${media !== null ? formatarNota(media) : "—"}</td>
+        <td>
+          <div style="display:flex; gap:2px;">
+            <input type="text" class="input-edicao" data-idx="${index}" data-campo="f0" value="${faltasArray[0] ?? 0}" title="Faltas Tri 1">
+            <input type="text" class="input-edicao" data-idx="${index}" data-campo="f1" value="${faltasArray[1] ?? 0}" title="Faltas Tri 2">
+            <input type="text" class="input-edicao" data-idx="${index}" data-campo="f2" value="${faltasArray[2] ?? 0}" title="Faltas Tri 3">
+          </div>
+        </td>
+        <td class="${classeSituacao(situacao)}">${situacao}</td>
+      `;
+      linha.cells[0].textContent = item.disciplina || "";
+    } else {
+      linha.innerHTML = `
+        <td></td>
+        <td>${formatarNota(n1)}</td>
+        <td>${formatarNota(n2)}</td>
+        <td>${formatarNota(n3)}</td>
+        <td>${media !== null ? formatarNota(media) : "—"}</td>
+        <td>${totalFaltas}</td>
+        <td class="${classeSituacao(situacao)}">${situacao}</td>
+      `;
+      linha.cells[0].textContent = item.disciplina || "";
+    }
+
+    corpo.appendChild(linha);
+  });
+}
+
+function preencherCards() {
+  const medias = [];
+  let totalFaltas = 0;
+  let totalBom = 0;
+  let totalAtencao = 0;
+
+  dadosAtuais.forEach((item) => {
+    const n1 = normalizarNota(item.tri1);
+    const n2 = normalizarNota(item.tri2);
+    const n3 = normalizarNota(item.tri3);
+
+    const media = calcularMedia([n1, n2, n3]);
+    const situacao = definirSituacao(media);
+
+    if (media !== null) medias.push(media);
+    if (situacao === "Bom desempenho") totalBom++;
+    if (situacao === "Atenção") totalAtencao++;
+
+    const faltasArray = Array.isArray(item.faltas) ? item.faltas : [0, 0, 0];
+    totalFaltas += somarFaltas(faltasArray);
+  });
+
+  const mediaGeral = calcularMedia(medias);
+  const frequenciaDemonstrativa = 92;
+
+  document.getElementById("media-geral").textContent =
+    mediaGeral !== null ? formatarNota(mediaGeral) : "—";
+  document.getElementById("total-faltas").textContent = totalFaltas;
+  document.getElementById("total-bom").textContent = totalBom;
+  document.getElementById("total-atencao").textContent = totalAtencao;
+  document.getElementById("frequencia").textContent = frequenciaDemonstrativa + "%";
+}
+
+function atualizarTela() {
+  preencherTabela();
+  preencherCards();
+}
+
+/* =========================================================
+   INTEGRAÇÃO COM A API
+   ========================================================= */
+async function entrarBoletim() {
+  const inputPin = document.getElementById("input-pin");
+  const msgStatus = document.getElementById("mensagem-status");
+  const pinDigitado = inputPin.value.trim();
+
+  if (!pinDigitado) {
+    msgStatus.textContent = "Digite o PIN para entrar.";
+    msgStatus.style.color = "#ef4444";
+    return;
+  }
+
+  msgStatus.textContent = "Conectando...";
+  msgStatus.style.color = "#0284c7";
+
+  try {
+    const response = await fetch(`${CONFIG_ALUNO.apiUrl}/api/v1/boletins/abrir`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        turma: CONFIG_ALUNO.turma,
+        numero_chamada: CONFIG_ALUNO.numeroChamada,
+        pin: pinDigitado
+      })
+    });
+
+    if (response.status === 401) {
+      msgStatus.textContent = "Turma, chamada ou PIN inválidos.";
+      msgStatus.style.color = "#ef4444";
+      return;
+    }
+
+    if (response.status === 429) {
+      msgStatus.textContent = "Muitas tentativas. Aguarde um minuto e tente novamente.";
+      msgStatus.style.color = "#ef4444";
+      return;
+    }
+
+    if (!response.ok) {
+      msgStatus.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
+      msgStatus.style.color = "#ef4444";
+      return;
+    }
+
+    const data = await response.json();
+
+    sessaoPin = pinDigitado;
+    inputPin.value = "";
+
+    if (data && data.dados && Array.isArray(data.dados.disciplinas) && data.dados.disciplinas.length > 0) {
+      dadosAtuais = data.dados.disciplinas;
+    } else {
+      dadosAtuais = JSON.parse(JSON.stringify(boletimLocal));
+    }
+
+    document.getElementById("area-login").classList.add("oculto");
+    document.getElementById("area-boletim").classList.remove("oculto");
+    msgStatus.textContent = "";
+
+    atualizarTela();
+
+  } catch (error) {
+    msgStatus.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
+    msgStatus.style.color = "#ef4444";
+  }
+}
+
+/* =========================================================
+   VALIÇÃO E EDIÇÃO
+   ========================================================= */
+function validarNotaDigitada(str) {
+  if (str === "" || str === null || str === undefined) {
+    return { valido: true, valor: null };
+  }
+  const limpo = String(str).trim().replace(",", ".");
+  if (limpo === "") {
+    return { valido: true, valor: null };
+  }
+  const num = Number(limpo);
+  if (!isNaN(num) && num >= 0 && num <= 10) {
+    return { valido: true, valor: num };
+  }
+  return { valido: false };
+}
+
+function validarFaltaDigitada(str) {
+  const limpo = String(str).trim();
+  if (limpo === "") return { valido: false };
+  const num = Number(limpo);
+  if (!isNaN(num) && Number.isInteger(num) && num >= 0) {
+    return { valido: true, valor: num };
+  }
+  return { valido: false };
+}
+
+function habilitarEdicao() {
+  modoEdicao = true;
+  document.getElementById("btn-alterar").classList.add("oculto");
+  document.getElementById("btn-salvar").classList.remove("oculto");
+  document.getElementById("btn-cancelar").classList.remove("oculto");
+  atualizarTela();
+}
+
+function cancelarEdicao() {
+  modoEdicao = false;
+  document.getElementById("btn-alterar").classList.remove("oculto");
+  document.getElementById("btn-salvar").classList.add("oculto");
+  document.getElementById("btn-cancelar").classList.add("oculto");
+  atualizarTela();
+}
+
+async function salvarAlteracoes() {
+  const inputs = document.querySelectorAll(".input-edicao");
+  let temErro = false;
+
+  inputs.forEach((input) => input.classList.remove("input-invalido"));
+
+  const novosDados = JSON.parse(JSON.stringify(dadosAtuais));
+
+  inputs.forEach((input) => {
+    const idx = parseInt(input.getAttribute("data-idx"), 10);
+    const campo = input.getAttribute("data-campo");
+    const valStr = input.value;
+
+    if (campo.startsWith("tri")) {
+      const res = validarNotaDigitada(valStr);
+      if (!res.valido) {
+        input.classList.add("input-invalido");
+        temErro = true;
+      } else {
+        novosDados[idx][campo] = res.valor;
+      }
+    } else if (campo.startsWith("f")) {
+      const pos = parseInt(campo.replace("f", ""), 10);
+      const res = validarFaltaDigitada(valStr);
+      if (!res.valido) {
+        input.classList.add("input-invalido");
+        temErro = true;
+      } else {
+        if (!Array.isArray(novosDados[idx].faltas)) {
+          novosDados[idx].faltas = [0, 0, 0];
+        }
+        novosDados[idx].faltas[pos] = res.valor;
+      }
+    }
+  });
+
+  if (temErro) {
+    alert("Por favor, corrija os campos destacados em vermelho antes de salvar.");
+    return;
+  }
+
+  const btnSalvar = document.getElementById("btn-salvar");
+  const textoOriginal = btnSalvar.textContent;
+  btnSalvar.textContent = "Salvando...";
+  btnSalvar.disabled = true;
+
+  try {
+    const response = await fetch(`${CONFIG_ALUNO.apiUrl}/api/v1/boletins/salvar`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        turma: CONFIG_ALUNO.turma,
+        numero_chamada: CONFIG_ALUNO.numeroChamada,
+        pin: sessaoPin,
+        dados: {
+          disciplinas: novosDados
+        }
+      })
+    });
+
+    if (response.ok) {
+      dadosAtuais = novosDados;
+      modoEdicao = false;
+      document.getElementById("btn-alterar").classList.remove("oculto");
+      document.getElementById("btn-salvar").classList.add("oculto");
+      document.getElementById("btn-cancelar").classList.add("oculto");
+      atualizarTela();
+      alert("Dados salvos com sucesso.");
+    } else {
+      alert("Não foi possível salvar as alterações. Tente novamente.");
+    }
+  } catch (err) {
+    alert("Erro ao conectar com o servidor ao salvar.");
+  } finally {
+    btnSalvar.textContent = textoOriginal;
+    btnSalvar.disabled = false;
+  }
+}
+
+/* =========================================================
+   INICIALIZAÇÃO E EVENTOS
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("btn-entrar").addEventListener("click", entrarBoletim);
+  document.getElementById("input-pin").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") entrarBoletim();
+  });
+
+  document.getElementById("btn-alterar").addEventListener("click", habilitarEdicao);
+  document.getElementById("btn-cancelar").addEventListener("click", cancelarEdicao);
+  document.getElementById("btn-salvar").addEventListener("click", salvarAlteracoes);
+});
