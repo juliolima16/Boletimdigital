@@ -35,6 +35,11 @@ let sessaoPin = "";
 let dadosAtuais = [];
 let modoEdicao = false;
 
+// Instâncias dos Gráficos
+let graficoMedias = null;
+let graficoEvolucao = null;
+let graficoFaltas = null;
+
 /* =========================================================
    FUNÇÃO: normalizarNota(valor)
    ========================================================= */
@@ -176,13 +181,213 @@ function preencherCards() {
   document.getElementById("frequencia").textContent = frequenciaDemonstrativa + "%";
 }
 
+/* =========================================================
+   FUNÇÕES DOS GRÁFICOS (SOMENTE LEITURA)
+   ========================================================= */
+function atualizarGraficoMedias() {
+  const ctx = document.getElementById("graficoMediasDisciplinas");
+  if (!ctx) return;
+
+  const labels = [];
+  const valores = [];
+
+  dadosAtuais.forEach((item) => {
+    labels.push(item.disciplina);
+    const n1 = normalizarNota(item.tri1);
+    const n2 = normalizarNota(item.tri2);
+    const n3 = normalizarNota(item.tri3);
+    const media = calcularMedia([n1, n2, n3]);
+    valores.push(media);
+  });
+
+  if (graficoMedias) {
+    graficoMedias.destroy();
+  }
+
+  graficoMedias = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Média",
+        data: valores,
+        backgroundColor: "#7b2d3b",
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          min: 0,
+          max: 10,
+          ticks: { stepSize: 2 }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const val = context.raw;
+              if (val === null) return " Média: Ainda não lançada";
+              return " Média: " + val.toFixed(1).replace(".", ",");
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function atualizarGraficoEvolucao() {
+  const ctx = document.getElementById("graficoEvolucaoTrimestres");
+  if (!ctx) return;
+
+  const tri1Notas = [];
+  const tri2Notas = [];
+  const tri3Notas = [];
+
+  dadosAtuais.forEach((item) => {
+    const n1 = normalizarNota(item.tri1);
+    const n2 = normalizarNota(item.tri2);
+    const n3 = normalizarNota(item.tri3);
+
+    if (n1 !== null) tri1Notas.push(n1);
+    if (n2 !== null) tri2Notas.push(n2);
+    if (n3 !== null) tri3Notas.push(n3);
+  });
+
+  const m1 = calcularMedia(tri1Notas);
+  const m2 = calcularMedia(tri2Notas);
+  const m3 = calcularMedia(tri3Notas);
+
+  if (graficoEvolucao) {
+    graficoEvolucao.destroy();
+  }
+
+  graficoEvolucao = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["1º Tri", "2º Tri", "3º Tri"],
+      datasets: [{
+        label: "Média Geral",
+        data: [m1, m2, m3],
+        borderColor: "#7b2d3b",
+        backgroundColor: "rgba(123, 45, 59, 0.1)",
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: "#7b2d3b"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          min: 0,
+          max: 10,
+          ticks: { stepSize: 2 }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const val = context.raw;
+              if (val === null) return " Média: Indisponível";
+              return " Média: " + val.toFixed(1).replace(".", ",");
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function atualizarGraficoFaltas() {
+  const ctx = document.getElementById("graficoFaltasTrimestres");
+  if (!ctx) return;
+
+  let f1 = 0;
+  let f2 = 0;
+  let f3 = 0;
+
+  dadosAtuais.forEach((item) => {
+    const faltasArray = Array.isArray(item.faltas) ? item.faltas : [0, 0, 0];
+    f1 += Number(faltasArray[0]) || 0;
+    f2 += Number(faltasArray[1]) || 0;
+    f3 += Number(faltasArray[2]) || 0;
+  });
+
+  const total = f1 + f2 + f3;
+  const cardFaltas = document.getElementById("cardFaltas");
+  const estadoFaltas = document.getElementById("estadoFaltas");
+
+  if (total >= 350) {
+    if (cardFaltas) cardFaltas.classList.add("card-perigo");
+    if (estadoFaltas) estadoFaltas.innerHTML = `<span class="badge-perigo">Perigo</span>`;
+  } else {
+    if (cardFaltas) cardFaltas.classList.remove("card-perigo");
+    if (estadoFaltas) estadoFaltas.innerHTML = "";
+  }
+
+  if (graficoFaltas) {
+    graficoFaltas.destroy();
+  }
+
+  graficoFaltas = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["1º Tri", "2º Tri", "3º Tri"],
+      datasets: [{
+        label: "Faltas",
+        data: [f1, f2, f3],
+        backgroundColor: "#0284c7",
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return ` ${context.raw} faltas`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function atualizarGraficos() {
+  atualizarGraficoMedias();
+  atualizarGraficoEvolucao();
+  atualizarGraficoFaltas();
+}
+
 function atualizarTela() {
   preencherTabela();
   preencherCards();
+  atualizarGraficos();
 }
 
 /* =========================================================
-   INTEGRAÇÃO COM A API
+   INTEGRAÇÃO COM A API (NÚCLEO PROTEGIDO)
    ========================================================= */
 async function entrarBoletim() {
   const inputPin = document.getElementById("input-pin");
@@ -251,7 +456,7 @@ async function entrarBoletim() {
 }
 
 /* =========================================================
-   VALIÇÃO E EDIÇÃO
+   VALIDAÇÃO E EDIÇÃO (NÚCLEO PROTEGIDO)
    ========================================================= */
 function validarNotaDigitada(str) {
   if (str === "" || str === null || str === undefined) {
